@@ -76,17 +76,12 @@ async fn get_or_create_answer(key: &str) -> Answer {
     new_answer
 }
 
-#[get("/")]
-async fn index() -> RawHtml<&'static str> {
-    RawHtml(include_str!("index.html"))
-}
-
 #[get("/api/<key>")]
 async fn api_answer(key: &str) -> Json<Answer> {
     Json(get_or_create_answer(key).await)
 }
 
-#[get("/html/<key>")]
+#[get("/<key>")]
 async fn html_answer(key: &str) -> RawHtml<String> {
     let answer = get_or_create_answer(key).await;
     let html = include_str!("answer.html")
@@ -96,17 +91,17 @@ async fn html_answer(key: &str) -> RawHtml<String> {
     RawHtml(html)
 }
 
-#[get("/html")]
+#[get("/")]
 fn redirect_to_rand_answer() -> Redirect {
     let mut rng = rand::rng();
     let key = rng.random::<u64>().to_string();
-    Redirect::to(format!("/html/{}", key))
+    Redirect::to(format!("/{}", key))
 }
 
 #[launch]
 fn rocket() -> _ {
     rocket::build().mount(
         "/",
-        routes![index, api_answer, html_answer, redirect_to_rand_answer],
+        routes![api_answer, html_answer, redirect_to_rand_answer],
     )
 }
